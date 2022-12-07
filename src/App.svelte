@@ -19,6 +19,13 @@
     calculeHourTiktok,
   } from "./app/extractor.js";
 
+  import {
+    demoDataUser,
+    demoBestStats,
+    demoLiveStats,
+    randomHourTiktok,
+  } from "./app/generateDemo.js";
+
   import { decodeData } from "./app/fileDecode.js";
 
   let fileOver = false;
@@ -51,41 +58,7 @@
 
       moyen = bestHoursTiktok?.reduce((acc, v) => acc + v, 0) / 24;
 
-      data = {
-        labels: [
-          "12am",
-          "1am",
-          "2am",
-          "3am",
-          "4am",
-          "5am",
-          "6am",
-          "7am",
-          "8am",
-          "9am",
-          "10am",
-          "11am",
-          "12pm",
-          "1pm",
-          "2pm",
-          "3pm",
-          "4pm",
-          "5pm",
-          "6pm",
-          "7pm",
-          "8pm",
-          "9pm",
-          "10pm",
-          "11pm",
-        ],
-        datasets: [
-          {
-            label: "Vue Tiktok",
-            data: bestHoursTiktok,
-            borderWidth: 1,
-          },
-        ],
-      };
+      // initGraph(bestHoursTiktok);
 
       loading = false;
       dataLoad = true;
@@ -95,6 +68,59 @@
       dataUser = null;
       error = true;
     }
+  };
+
+  const demoData = async () => {
+    user = await demoDataUser();
+    bestStats = await demoBestStats();
+    live = await demoLiveStats();
+
+    bestHoursTiktok = await randomHourTiktok();
+
+    moyen = bestHoursTiktok?.reduce((acc, v) => acc + v, 0) / 24;
+
+    // initGraph(bestHoursTiktok);
+
+    loading = false;
+    dataLoad = true;
+  };
+
+  const initGraph = (bestHoursTiktok) => {
+    data = {
+      labels: [
+        "12am",
+        "1am",
+        "2am",
+        "3am",
+        "4am",
+        "5am",
+        "6am",
+        "7am",
+        "8am",
+        "9am",
+        "10am",
+        "11am",
+        "12pm",
+        "1pm",
+        "2pm",
+        "3pm",
+        "4pm",
+        "5pm",
+        "6pm",
+        "7pm",
+        "8pm",
+        "9pm",
+        "10pm",
+        "11pm",
+      ],
+      datasets: [
+        {
+          label: "Vue Tiktok",
+          data: bestHoursTiktok,
+          borderWidth: 1,
+        },
+      ],
+    };
   };
 
   const extractFile = async (file) => {
@@ -155,6 +181,13 @@
           {/if}
         </div>
       </DropFile>
+      <p>
+        You don't have a package yet ? <strong
+          on:click={() => {
+            demoData();
+          }}>Test the demo 👀</strong
+        >
+      </p>
     </div>
     <footer>
       <p>
@@ -337,7 +370,11 @@
                 target="_blank"
                 rel="noreferrer"
               >
-                <img src={live?.bestLiveView?.CoverUri} alt="" />
+                <img
+                  src={live?.bestLiveView?.CoverUri}
+                  alt=""
+                  on:error={(e) => (e.target.src = LogoError)}
+                />
                 <p>
                   <strong>{live?.bestLiveView?.RoomTitle}</strong>
                 </p>
@@ -355,7 +392,11 @@
                 target="_blank"
                 rel="noreferrer"
               >
-                <img src={live?.bestLiveLike?.CoverUri} alt="" />
+                <img
+                  src={live?.bestLiveLike?.CoverUri}
+                  alt=""
+                  on:error={(e) => (e.target.src = LogoError)}
+                />
                 <p>
                   <strong>{live?.bestLiveLike?.RoomTitle}</strong>
                 </p>
@@ -685,6 +726,7 @@
 
   .drop {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     height: calc(100vh - 60px);

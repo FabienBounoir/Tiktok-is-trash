@@ -117,6 +117,23 @@ const extractBestStats = async (dataUser) => {
 const extractLiveStats = async (dataUser) => {
     return new Promise((resolve, reject) => {
         try {
+
+            console.log(dataUser["Tiktok Live"][
+                "Go Live History"
+            ]?.GoLiveList?.reduce(
+                (acc, v) =>
+                    parseInt(acc.TotalLike) > parseInt(v.TotalLike) ? acc : v,
+                0
+            ))
+
+            console.log(dataUser["Tiktok Live"][
+                "Go Live History"
+            ]?.GoLiveList?.reduce(
+                (acc, v) =>
+                    parseInt(acc.TotalView) > parseInt(v.TotalView) ? acc : v,
+                0
+            ))
+
             resolve({
                 totalLive:
                     dataUser["Tiktok Live"]["Go Live History"]?.GoLiveList?.length,
