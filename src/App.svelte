@@ -2,8 +2,6 @@
   // @ts-nocheck
   import Chart from "svelte-frappe-charts";
   import DropFile from "./lib/DropFile.svelte";
-  import json from "./assets/data.json";
-  import { onMount } from "svelte";
 
   import likeIcon from "./assets/like.svg";
   import viewIcon from "./assets/view.svg";
@@ -13,13 +11,23 @@
   import searchIcon from "./assets/search.svg";
   import hastagsIcon from "./assets/hastags.svg";
 
+  import {
+    extractDataUser,
+    extractBestStats,
+    extractLiveStats,
+    calculeHourTiktok,
+  } from "./app/extractor.js";
+
+  import { decodeData } from "./app/fileDecode.js";
+
   let fileOver = false;
   let dataUser = null;
   let user = null;
   let bestStats = null;
-  let bestHoursTiktok = new Array(24).fill(0);
+  let bestHoursTiktok = null;
   let live = null;
   let moyen = 0;
+  let dataLoad = false;
 
   let loading = false;
   let error = null;
@@ -30,149 +38,17 @@
       i == 0 ? "12am" : i < 12 ? `${i}am` : i == 12 ? "12pm" : `${i - 12}pm`
     );
 
-  const extractData = (data) => {
+  const extractData = async (data) => {
     try {
-      user = {
-        username: dataUser?.Profile["Profile Information"].ProfileMap.userName,
-        phone:
-          dataUser?.Profile["Profile Information"].ProfileMap.telephoneNumber,
-        avatar:
-          dataUser?.Profile["Profile Information"].ProfileMap.profilePhoto,
-        following: dataUser?.Activity["Following List"].Following.length,
-        follower: dataUser?.Activity["Follower List"].FansList.length,
-        like: dataUser?.Profile["Profile Information"].ProfileMap.likesReceived,
-        bio: dataUser?.Profile["Profile Information"].ProfileMap.bioDescription,
-        birthdate:
-          dataUser?.Profile["Profile Information"].ProfileMap.birthDate,
-        email: dataUser?.Profile["Profile Information"].ProfileMap.emailAddress,
-      };
+      user = await extractDataUser(data);
+      bestStats = await extractBestStats(data);
+      live = await extractLiveStats(data);
 
-      bestStats = {
-        firstFollowers: dataUser?.Activity["Follower List"].FansList.slice(
-          dataUser?.Activity["Follower List"].FansList.length - 5,
-          dataUser?.Activity["Follower List"].FansList.length
-        ).reverse(),
-        firstFollowing: dataUser?.Activity["Following List"].Following.slice(
-          dataUser?.Activity["Following List"].Following.length - 5,
-          dataUser?.Activity["Following List"].Following.length
-        ).reverse(),
-        firstHastags: dataUser?.Activity.Hashtag.HashtagList.slice(
-          dataUser?.Activity.Hashtag.HashtagList.length - 5,
-          dataUser?.Activity.Hashtag.HashtagList.length
-        ).reverse(),
-        totalHastags: dataUser?.Activity.Hashtag.HashtagList.length,
-        purchase: 0,
-        bestHastags: [],
-        totalVideoLike: dataUser?.Activity["Like List"].ItemFavoriteList.length,
-        firstLike: dataUser?.Activity["Like List"].ItemFavoriteList.slice(
-          dataUser?.Activity["Like List"].ItemFavoriteList.length - 5,
-          dataUser?.Activity["Like List"].ItemFavoriteList.length
-        ).reverse(),
-        totalViewTiktok:
-          dataUser?.Activity["Video Browsing History"].VideoList.length,
+      bestHoursTiktok = await calculeHourTiktok(
+        dataUser?.Activity["Video Browsing History"]?.VideoList
+      );
 
-        totalCommentTiktok: dataUser?.Comment.Comments.CommentsList.length,
-        firstVideo:
-          dataUser?.Activity["Video Browsing History"].VideoList[
-            dataUser?.Activity["Video Browsing History"].VideoList.length - 1
-          ],
-        firstComment:
-          dataUser?.Comment.Comments.CommentsList[
-            dataUser?.Comment.Comments.CommentsList.length - 1
-          ],
-        totalSearch: dataUser?.Activity?.["Search History"]?.SearchList?.length,
-        bestWordUseInSearch: [],
-      };
-
-      console.log(dataUser["Tiktok Live"])
-
-      live = {
-        totalLive:
-          dataUser["Tiktok Live"]["Go Live History"]?.GoLiveList?.length,
-        totalLikeLive: dataUser["Tiktok Live"][
-          "Go Live History"
-        ]?.GoLiveList?.reduce(
-          (acc, v) => parseInt(acc) + parseInt(v.TotalLike),
-          0
-        ),
-        totalViewLive: dataUser["Tiktok Live"][
-          "Go Live History"
-        ]?.GoLiveList?.reduce(
-          (acc, v) => parseInt(acc) + parseInt(v.TotalView),
-          0
-        ),
-        bestLiveLike: dataUser["Tiktok Live"][
-          "Go Live History"
-        ]?.GoLiveList?.reduce(
-          (acc, v) =>
-            parseInt(acc.TotalLike) > parseInt(v.TotalLike) ? acc : v,
-          0
-        ),
-        bestLiveView: dataUser["Tiktok Live"][
-          "Go Live History"
-        ]?.GoLiveList?.reduce(
-          (acc, v) =>
-            parseInt(acc.TotalView) > parseInt(v.TotalView) ? acc : v,
-          0
-        ),
-      };
-
-      for (let search of dataUser?.Activity?.["Search History"]?.SearchList) {
-        for (let word of search.SearchTerm.split(" ")) {
-          if (word.length < 4) continue;
-          if (
-            bestStats.bestWordUseInSearch.find(
-              (v) => v.word.toLowerCase() == word.toLowerCase()
-            )
-          ) {
-            bestStats.bestWordUseInSearch.find(
-              (v) => v.word.toLowerCase() == word.toLowerCase()
-            ).count++;
-          } else {
-            bestStats.bestWordUseInSearch.push({
-              word: word.toLowerCase(),
-              count: 1,
-            });
-          }
-        }
-      }
-
-      bestStats.bestWordUseInSearch = bestStats.bestWordUseInSearch
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-
-      for (let purchase of dataUser?.Activity["Purchase History"]?.BuyGifts
-        ?.BuyGifts ?? []) {
-        bestStats.purchase += parseFloat(
-          purchase.Price.replace(/[^0-9.-]+/g, "")
-        );
-      }
-
-      for (let hastags of dataUser?.Activity.Hashtag.HashtagList) {
-        if (bestStats.bestHastags[hastags.HashtagName.toLowerCase()]) {
-          bestStats.bestHastags[hastags.HashtagName.toLowerCase()] += 1;
-        } else {
-          bestStats.bestHastags[hastags.HashtagName.toLowerCase()] = 1;
-        }
-      }
-
-      bestStats.bestHastags = Object.entries(bestStats.bestHastags)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map((v) => ({ name: v[0], value: v[1] }));
-
-      for (let tiktok of dataUser?.Activity["Video Browsing History"].VideoList) {
-        let date = new Date(tiktok.Date);
-
-        bestHoursTiktok[
-          date.getHours() + 2 < 24
-            ? date.getHours() + 2
-            : date.getHours() + 2 - 24
-        ]++;
-      }
-
-      //Create moyen of tiktok by hour of day
-      moyen = bestHoursTiktok.reduce((acc, v) => acc + v, 0) / 24;
+      moyen = bestHoursTiktok?.reduce((acc, v) => acc + v, 0) / 24;
 
       data = {
         labels: [
@@ -210,13 +86,8 @@
         ],
       };
 
-      console.log(user);
-      console.log(bestStats);
-      console.log(dataUser);
-      console.log(bestHoursTiktok);
-      console.log(live);
-
       loading = false;
+      dataLoad = true;
     } catch (e) {
       console.log(e);
       loading = false;
@@ -225,31 +96,11 @@
     }
   };
 
-  const extractFile = (file) => {
+  const extractFile = async (file) => {
     loading = true;
     let reader = new FileReader();
-    reader.onload = (e) => {
-      let json = {};
-      //check if file is a zip
-      if (e.target.result.startsWith("PK")) {
-        json = e.target.result.slice(
-          e.target.result.indexOf("{"),
-          e.target.result.length
-        );
-
-        json = json.slice(0, json.lastIndexOf("/user_data.json"));
-        json = json.slice(0, json.lastIndexOf("}") + 1);
-
-        console.log("json", json);
-      } else {
-        json = JSON.stringify(e.target.result);
-      }
-
-      console.log(json);
-
-      //parse json
-      let data = JSON.parse(json);
-      dataUser = data;
+    reader.onload = async (e) => {
+      dataUser = await decodeData(e.target.result);
       extractData(dataUser);
     };
 
@@ -270,15 +121,13 @@
       return number;
     }
   };
-
-  // dataUser = json;
-  // extractData(json);
 </script>
 
 <main>
   <div class="nav-bar">
     <h1
       on:click={() => {
+        dataLoad = false;
         dataUser = null;
       }}
     >
@@ -286,7 +135,7 @@
     </h1>
   </div>
 
-  {#if dataUser == null}
+  {#if dataLoad == false}
     <div class="drop">
       <DropFile
         {onDrop}
