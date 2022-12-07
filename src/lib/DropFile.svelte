@@ -57,7 +57,7 @@
 <input
   id="hidden-input"
   type="file"
-  accept=".zip"
+  accept=".zip,.json"
   on:change={handleChange}
   bind:this={input}
 />

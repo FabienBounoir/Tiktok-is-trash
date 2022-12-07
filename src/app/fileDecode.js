@@ -16,7 +16,7 @@ const decodeData = async (files) => {
                 resolve(JSON.parse(json));
             } else {
                 console.log("📝 JSON file detected");
-                resolve(files);
+                resolve(JSON.parse(files));
             }
         }
         catch (error) {

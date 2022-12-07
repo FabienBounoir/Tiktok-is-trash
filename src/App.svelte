@@ -10,6 +10,7 @@
   import moneyIcon from "./assets/money.svg";
   import searchIcon from "./assets/search.svg";
   import hastagsIcon from "./assets/hastags.svg";
+  import LogoError from "./assets/logo.webp";
 
   import {
     extractDataUser,
@@ -159,12 +160,14 @@
       <p>
         Made with ❤️ by <a
           href="https://github.com/FabienBounoir"
-          target="_blank">Fabien Bounoir</a
+          target="_blank"
+          rel="noreferrer">Fabien Bounoir</a
         >
         is an open source project, you can find the code
         <a
           href="https://github.com/FabienBounoir/tiktok-is-trash"
-          target="_blank">here</a
+          target="_blank"
+          rel="noreferrer">here</a
         >
       </p>
     </footer>
@@ -173,10 +176,8 @@
       <div class="profile">
         <img
           src={user.avatar}
-          alt=""
-          on:error={(e) =>
-            (e.target.src =
-              "https://cdn.stockmediaserver.com/smsimg33/PV/IsignstockContributors/iss_24922_01172.jpg?token=wDIlX_XpH_aVteNnU7SCzd_yCtYb6m0hMCuUvxuRuCs&class=pv&smss=52&expires=4102358400")}
+          alt="Avatar Picture"
+          on:error={(e) => (e.target.src = LogoError)}
         />
         <h1>{user.username}</h1>
         <div class="follow">
@@ -310,7 +311,7 @@
         {/if}
       </div>
 
-      <div class="live">
+      <div class={"live" + (live && live?.totalLive > 0 ? "" : " remove")}>
         {#if live && live?.totalLive > 0}
           <h1>Your Live Stats</h1>
           <div class="list">
@@ -334,6 +335,7 @@
                 class="list-element"
                 href={live?.bestLiveView?.ReplayUrl}
                 target="_blank"
+                rel="noreferrer"
               >
                 <img src={live?.bestLiveView?.CoverUri} alt="" />
                 <p>
@@ -351,6 +353,7 @@
                 class="list-element"
                 href={live?.bestLiveLike?.ReplayUrl}
                 target="_blank"
+                rel="noreferrer"
               >
                 <img src={live?.bestLiveLike?.CoverUri} alt="" />
                 <p>
@@ -393,7 +396,7 @@
               {
                 label: "average",
                 value: moyen,
-                options: { labelPos: "left" }, // default: 'right'
+                options: { labelPos: "left" },
               },
             ],
           }}
@@ -402,82 +405,72 @@
             xAxisMode: "tick",
           }}
           barOptions={{
-            spaceRatio: 0.5, // default: 1
+            spaceRatio: 0.5,
           }}
           type="bar"
         />
       </div>
 
-      <!-- <div class="days">
-        <h1>Your TikTok Days</h1>
-        <p>
-          <strong
-            >{daysLabels[
-              bestDaysTiktok.indexOf(Math.max(...bestDaysTiktok))
-            ]}</strong
-          > is your favorite day to watch Tiktok !
-        </p>
-        <Chart
-          type="heatmap"
-          data={{
-            labels: hoursLabels,
-            datasets: [
-              {
-                name: "Tiktok",
-                values: bestHoursTiktok,
-              },
-            ],
-          }}
-        />
-        />
-      </div> -->
-
-      <div class="firstFollowed">
-        <h1>Your first followed user is:</h1>
-        {#each bestStats.firstFollowers as followed, i}
-          <a
-            class="list-element"
-            href={`https://www.tiktok.com/@${followed.UserName}`}
-            target="_blank"
-          >
-            <div>
-              <p class="list-balise">
-                {i + 1}
-              </p>
-              <p class="username">
-                <strong
-                  >{followed.UserName[0].toUpperCase() +
-                    followed.UserName.slice(1)}</strong
-                >
-              </p>
-            </div>
-            <p>{new Date(followed?.Date).toLocaleString()}</p>
-          </a>
-        {/each}
+      <div
+        class={"firstFollowed" + (bestStats.firstFollowers ? "" : " remove")}
+      >
+        {#if bestStats.firstFollowers}
+          <h1>Your first followed user is:</h1>
+          {#each bestStats.firstFollowers as followed, i}
+            <a
+              class="list-element"
+              href={`https://www.tiktok.com/@${followed.UserName}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <div>
+                <p class="list-balise">
+                  {i + 1}
+                </p>
+                <p class="username">
+                  <strong
+                    >{followed.UserName[0].toUpperCase() +
+                      followed.UserName.slice(1)}</strong
+                  >
+                </p>
+              </div>
+              <p>{new Date(followed?.Date).toLocaleString()}</p>
+            </a>
+          {/each}
+        {:else}
+          <h3 class="center">You have never followed someone</h3>
+        {/if}
       </div>
 
-      <div class="firstFollowers">
-        <h1>Your first follower is:</h1>
-        {#each bestStats.firstFollowing as follower, i}
-          <a
-            class="list-element"
-            href={`https://www.tiktok.com/@${follower.UserName}`}
-            target="_blank"
-          >
-            <div>
-              <p class="list-balise">
-                {i + 1}
-              </p>
-              <p class="username">
-                <strong
-                  >{follower.UserName[0].toUpperCase() +
-                    follower.UserName.slice(1)}</strong
-                >
-              </p>
-            </div>
-            <p>{new Date(follower?.Date).toLocaleString()}</p>
-          </a>
-        {/each}
+      <div
+        class={"firstFollowers" + (bestStats.firstFollowing ? "" : " remove")}
+      >
+        {#if bestStats.firstFollowing}
+          <h1>Your first follower is:</h1>
+          {#each bestStats.firstFollowing as follower, i}
+            <a
+              class="list-element"
+              href={`https://www.tiktok.com/@${follower.UserName}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <div>
+                <p class="list-balise">
+                  {i + 1}
+                </p>
+                <p class="username">
+                  <strong
+                    >{follower.UserName[0].toUpperCase() +
+                      follower.UserName.slice(1)}</strong
+                  >
+                </p>
+              </div>
+              <p>{new Date(follower?.Date).toLocaleString()}</p>
+            </a>
+          {/each}
+        {:else}
+          <h3 class="center">You have no followers</h3>
+        {/if}
       </div>
     </div>
   {/if}
@@ -665,8 +658,6 @@
           padding: 0;
         }
 
-        // justify-content: space-evenly;
-
         img {
           width: 30px;
           height: 30px;
@@ -683,7 +674,6 @@
         display: flex;
         align-items: center;
         gap: 1em;
-        // margin-bottom: 1em;
 
         img {
           width: 48px;
@@ -708,14 +698,6 @@
     height: calc(100vh - 80vh);
     color: white;
     border: 2px dashed #ff0050;
-    // border-image: linear-gradient(90deg, #ff3e00, #ff3e00);
-
-    // box-sizing: content-box;
-    // border-width: 2px;
-    // border-style: dashed;
-    // border-image: linear-gradient(to right bottom, #00f2ea, #ff0050);
-    // border-image-slice: 1;
-
     border-radius: 10px;
     cursor: pointer;
   }
@@ -830,6 +812,10 @@
         .list-element {
           margin-left: 0;
         }
+      }
+
+      .remove {
+        display: none;
       }
 
       .firstFollowers {
