@@ -11,6 +11,7 @@
   import searchIcon from "./assets/search.svg";
   import hastagsIcon from "./assets/hastags.svg";
   import LogoError from "./assets/logo.webp";
+  import Logo from "./assets/logo.svg";
 
   import {
     extractDataUser,
@@ -163,32 +164,37 @@
   </div>
 
   {#if dataLoad == false}
-    <div class="drop">
-      <DropFile
-        {onDrop}
-        onEnter={() => (fileOver = true)}
-        onLeave={() => (fileOver = false)}
-      >
-        <div class={`drop-zone ${fileOver ? "over" : ""}`}>
-          {#if fileOver}
-            <p>Drop it!</p>
-          {:else if error}
-            <p><strong>Something went wrong</strong></p>
-          {:else if loading}
-            <p>Loading...</p>
-          {:else}
-            <p>Click here to select your Tiktok data</p>
-          {/if}
-        </div>
-      </DropFile>
-      <p>
-        You don't have a package yet ? <strong
-          on:click={() => {
-            demoData();
-          }}>Test the demo 👀</strong
+    <div class="home">
+      <img src={Logo} alt="Logo" />
+      <div class="drop">
+        <DropFile
+          {onDrop}
+          onEnter={() => (fileOver = true)}
+          onLeave={() => (fileOver = false)}
         >
-      </p>
+          <div class={`drop-zone ${fileOver ? "over" : ""}`}>
+            {#if fileOver}
+              <p>Drop it!</p>
+            {:else if error}
+              <p><strong>Something went wrong</strong></p>
+            {:else if loading}
+              <p>Loading...</p>
+            {:else}
+              <p>Click here to select your Tiktok data</p>
+            {/if}
+          </div>
+        </DropFile>
+        <p>
+          You don't have a package yet ? <strong
+            class="pointer"
+            on:click={() => {
+              demoData();
+            }}>Test the demo 👀</strong
+          >
+        </p>
+      </div>
     </div>
+
     <footer>
       <p>
         Made with ❤️ by <a
@@ -530,6 +536,10 @@
     text-align: center;
   }
 
+  .pointer {
+    cursor: pointer;
+  }
+
   .data {
     display: grid;
     grid-template-columns: repeat(11, 1fr);
@@ -729,15 +739,19 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 60px);
+    // height: calc(100vh - 60px);
+    width: 100%;
   }
 
   .drop-zone {
     display: grid;
     align-items: center;
     margin: auto;
-    width: calc(100vh - 50vh);
-    height: calc(100vh - 80vh);
+    width: calc(100vw - 70vw);
+    aspect-ratio: 6 / 3;
+
+    // width: calc(100vh - 50vh);
+    // height: calc(100vh - 80vh);
     color: white;
     border: 2px dashed #ff0050;
     border-radius: 10px;
@@ -771,6 +785,26 @@
     }
   }
 
+  .home {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-rows: 1fr;
+    gap: 1em;
+
+    align-items: center;
+    justify-items: center;
+    height: calc(100vh - 120px);
+
+    > img {
+      // width: ;
+      width: 50%;
+    }
+
+    > div {
+      // width: 40%;
+    }
+  }
+
   footer {
     position: fixed;
     bottom: 0;
@@ -789,6 +823,20 @@
   }
 
   @media screen and (max-width: 1250px) {
+    .home {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+      height: calc(100vh - 200px);
+
+      .drop-zone {
+        width: 80vw;
+      }
+
+      > img {
+        width: 10em;
+      }
+    }
+
     .data {
       .profile {
         grid-column: 1 / 5;
