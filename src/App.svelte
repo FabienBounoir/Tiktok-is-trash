@@ -167,6 +167,14 @@
     <div class="home">
       <img src={Logo} alt="Logo" />
       <div class="drop">
+        <p>
+          Get your Tiktok data <a
+            href="https://www.tiktok.com/setting/download-your-data"
+            target="_blank"
+            rel="noreferrer">here</a
+          >, select the JSON format and drop it below.
+        </p>
+
         <DropFile
           {onDrop}
           onEnter={() => (fileOver = true)}
@@ -741,6 +749,11 @@
     align-items: center;
     // height: calc(100vh - 60px);
     width: 100%;
+
+    a {
+      color: #00f2ea;
+      text-decoration: none;
+    }
   }
 
   .drop-zone {
